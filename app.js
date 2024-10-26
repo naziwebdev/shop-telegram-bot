@@ -6,6 +6,10 @@ const token = configs.telegramToken;
 
 const bot = new Telegraf(token);
 
+let discountCount = 1;
+let name;
+let price;
+
 bot.start((ctx) => {
   mainMenu(ctx);
 });
@@ -14,12 +18,24 @@ bot.hears("خرید محصول 🛍️", (ctx) => {
   buyMenu(ctx);
 });
 
+//this must be above the callback_query otherwise dont work
+bot.action("menu", (ctx) => {
+  buyMenu(ctx);
+});
+
+bot.action("plus", (ctx) => {
+  discountCount = discountCount + 1;
+  choiceCountMenu(ctx, name, price, discountCount);
+});
+
+bot.action("minus", (ctx) => {
+  discountCount = discountCount - 1;
+  choiceCountMenu(ctx, name, price, discountCount);
+});
+
 bot.on("callback_query", (ctx) => {
   const cammand = ctx.callbackQuery.data;
   const actions = ["meat", "fruit", "food", "sweet"];
-
-  let name;
-  let price;
 
   switch (cammand) {
     case "meat":
@@ -44,7 +60,7 @@ bot.on("callback_query", (ctx) => {
   }
 
   if (actions.includes(cammand)) {
-    choiceCountMenu(ctx, name, price);
+    choiceCountMenu(ctx, name, price, discountCount);
   }
 });
 

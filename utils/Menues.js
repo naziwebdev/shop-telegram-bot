@@ -23,9 +23,9 @@ const buyMenu = (ctx) => {
   );
 };
 
-const choiceCountMenu = (ctx, name, price) => {
+const choiceCountMenu = (ctx, name, price,count) => {
   ctx.editMessageText(
-    `خرید کد${name} به مبلغ : ${price} تومان\n تعداد را مشخص کنید \n تعداد:1 `,
+    `خرید کد${name} به مبلغ : ${price} تومان\n تعداد را مشخص کنید \n تعداد: ${count} `,
     Markup.inlineKeyboard([
       [
         Markup.button.callback("+1", "plus"),
