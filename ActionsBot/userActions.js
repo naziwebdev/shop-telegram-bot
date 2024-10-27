@@ -53,7 +53,7 @@ const adminSetPassword = async (ctx, password) => {
       const [user] = await db.execute(userQuery, [chatId]);
 
       const hashedPassword = await bcrypt.hash(password, 10);
-   
+
       await db.execute("INSERT INTO admin_passwords  VALUES (NULL,?,?)", [
         hashedPassword,
         user[0].id,
@@ -67,4 +67,57 @@ const adminSetPassword = async (ctx, password) => {
   }
 };
 
-module.exports = { registerUser, adminGetPassword, adminSetPassword };
+const loginAdminGetPassword = async (ctx) => {
+  try {
+    const chatId = ctx.chat.id;
+    const getAdminQuery =
+      'SELECT * FROM users WHERE chat_id = ? AND role = "admin"';
+    const [admin] = await db.execute(getAdminQuery, [chatId]);
+
+    if (admin) {
+      //set this till in bot.on('text') can seperate get password from another text
+      await redis.set(`admin:${chatId}:login`, "verify", "EX", 60);
+      ctx.reply("پسورد خود را وارد کنید ؛");
+    } else {
+      ctx.reply("شما ادمین نیستید !");
+    }
+  } catch (error) {
+    throw error;
+  }
+};
+
+const loginAdmin = async (ctx, password) => {
+  try {
+    const chatId = ctx.chat.id;
+    const getAdminQuery =
+      'SELECT * FROM users WHERE chat_id = ? AND role = "admin"';
+    const [admin] = await db.execute(getAdminQuery, [chatId]);
+
+    const [adminPassword] = await db.execute(
+      "SELECT * FROM admin_passwords WHERE user_id=?",
+      [admin[0].id]
+    );
+
+    const isValidPassword = await bcrypt.compare(
+      password,
+      adminPassword[0].password
+    );
+
+    if (isValidPassword) {
+      await redis.set(`admin:${chatId}:login:success`, "true", "EX", 604800);
+      ctx.reply("با موفقیت لاگین شدید ✅");
+    } else {
+      ctx.reply("شکست در لاگین ❌");
+    }
+  } catch (error) {
+    throw error;
+  }
+};
+
+module.exports = {
+  registerUser,
+  adminGetPassword,
+  adminSetPassword,
+  loginAdminGetPassword,
+  loginAdmin,
+};

@@ -6,8 +6,11 @@ const {
   registerUser,
   adminGetPassword,
   adminSetPassword,
-} = require("./ActionsBot/index");
+  loginAdminGetPassword,
+  loginAdmin,
+} = require("./ActionsBot/userActions");
 const { hintMessage } = require("./messages");
+
 const token = configs.telegramToken;
 
 const bot = new Telegraf(token);
@@ -28,6 +31,11 @@ bot.command("setPassword", async (ctx) => {
   await adminGetPassword(ctx);
 });
 
+//get password for login admin
+bot.command("admin", async (ctx) => {
+  await loginAdminGetPassword(ctx);
+});
+
 //send products list keyborad menu
 bot.hears("خرید محصول 🛍️", (ctx) => {
   buyMenu(ctx);
@@ -46,12 +54,25 @@ bot.on("text", async (ctx) => {
   const chatId = ctx.chat.id;
   const userMessage = ctx.message.text;
   const isPasswordAdminMessage = await redis.get(`admin:${chatId}`);
+  const isLoginPasswordAdminMessage = await redis.get(`admin:${chatId}:login`);
 
-  if (isPasswordAdminMessage , !userMessage.startsWith("/")) {
-    await adminSetPassword(ctx,userMessage);
+  //set admin password in db
+  if (isPasswordAdminMessage && !userMessage.startsWith("/")) {
+    await redis.del(`admin:${chatId}`);
+    await adminSetPassword(ctx, userMessage);
   }
 
-  if (!userMessage.startsWith("/") , !isPasswordAdminMessage) {
+  //login admin
+  if (isLoginPasswordAdminMessage && !userMessage.startsWith("/")) {
+    await redis.del(`admin:${chatId}:login`);
+    await loginAdmin(ctx, userMessage);
+  }
+
+  if (
+    !userMessage.startsWith("/") &&
+    !isPasswordAdminMessage &&
+    !isLoginPasswordAdminMessage
+  ) {
     ctx.reply("پیام شما با موفقیت دریافت شد 📩");
   }
 });
