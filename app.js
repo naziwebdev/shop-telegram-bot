@@ -1,6 +1,7 @@
 const { Telegraf, Markup } = require("telegraf");
 const configs = require("./configs");
 const { mainMenu, buyMenu, choiceCountMenu } = require("./utils/Menues");
+const { registerUser } = require("./ActionsBot/index");
 const { hintMessage } = require("./messages");
 const token = configs.telegramToken;
 
@@ -12,7 +13,8 @@ let name;
 let price;
 
 //start
-bot.start((ctx) => {
+bot.start(async (ctx) => {
+  await registerUser(ctx);
   mainMenu(ctx);
 });
 
