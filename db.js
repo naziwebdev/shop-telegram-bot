@@ -3,7 +3,7 @@ const configs = require("./configs");
 
 const access = {
   uri: configs.db.uri,
-  connentionLimit: configs.db.poolSize,
+  connectionLimit: configs.db.poolSize,
   waitForConnections: true,
 };
 
