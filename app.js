@@ -1,7 +1,12 @@
 const { Telegraf, Markup } = require("telegraf");
 const configs = require("./configs");
+const redis = require("./redis");
 const { mainMenu, buyMenu, choiceCountMenu } = require("./utils/Menues");
-const { registerUser } = require("./ActionsBot/index");
+const {
+  registerUser,
+  adminGetPassword,
+  adminSetPassword,
+} = require("./ActionsBot/index");
 const { hintMessage } = require("./messages");
 const token = configs.telegramToken;
 
@@ -18,6 +23,11 @@ bot.start(async (ctx) => {
   mainMenu(ctx);
 });
 
+//admin set password
+bot.command("setPassword", async (ctx) => {
+  await adminGetPassword(ctx);
+});
+
 //send products list keyborad menu
 bot.hears("خرید محصول 🛍️", (ctx) => {
   buyMenu(ctx);
@@ -32,9 +42,18 @@ bot.hears("پشتیبانی 💁‍♀️", (ctx) => {
   ctx.reply("پیام خود را برای پشتیبان ارسال نمایید :");
 });
 
-bot.on("text", (ctx) => {
+bot.on("text", async (ctx) => {
+  const chatId = ctx.chat.id;
   const userMessage = ctx.message.text;
-  ctx.reply("پیام شما با موفقیت دریافت شد 📩");
+  const isPasswordAdminMessage = await redis.get(`admin:${chatId}`);
+
+  if (isPasswordAdminMessage , !userMessage.startsWith("/")) {
+    await adminSetPassword(ctx,userMessage);
+  }
+
+  if (!userMessage.startsWith("/") , !isPasswordAdminMessage) {
+    ctx.reply("پیام شما با موفقیت دریافت شد 📩");
+  }
 });
 
 //this must be above the callback_query otherwise dont work
