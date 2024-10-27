@@ -26,6 +26,15 @@ bot.hears("راهنما ✅", (ctx) => {
   ctx.reply(hintMessage);
 });
 
+bot.hears("پشتیبانی 💁‍♀️", (ctx) => {
+  ctx.reply("پیام خود را برای پشتیبان ارسال نمایید :");
+});
+
+bot.on("text", (ctx) => {
+  const userMessage = ctx.message.text;
+  ctx.reply("پیام شما با موفقیت دریافت شد 📩");
+});
+
 //this must be above the callback_query otherwise dont work
 //send buy keyboard menu
 bot.action("menu", (ctx) => {
