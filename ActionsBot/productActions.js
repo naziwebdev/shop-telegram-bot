@@ -19,4 +19,12 @@ const addProduct = async (ctx, title, price) => {
   }
 };
 
-module.exports = { addProduct };
+const getProduct = async () => {
+  const query = "SELECT * FROM products GROUP BY title,price";
+
+  const products = await db.execute(query);
+
+  return products[0];
+};
+
+module.exports = { addProduct, getProduct };

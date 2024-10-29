@@ -1,4 +1,5 @@
 const { Markup } = require("telegraf");
+const { getProduct } = require("../ActionsBot/productActions");
 
 const mainMenu = (ctx) => {
   ctx.reply(
@@ -11,19 +12,32 @@ const mainMenu = (ctx) => {
   );
 };
 
-const buyMenu = (ctx) => {
-  ctx.reply(
-    "محصول مورد نظر را انتخاب کنید :",
-    Markup.inlineKeyboard([
-      [Markup.button.callback(" کد پروتئین 🍗", "meat")],
-      [Markup.button.callback("کد میوه 🍏", "fruit")],
-      [Markup.button.callback("کد غذا 🍕", "food")],
-      [Markup.button.callback("کد شیرینی 🧁", "sweet")],
-    ])
-  );
+const buyMenu = async (ctx) => {
+  const products = await getProduct();
+
+  const buttons = products.map((product) => {
+    const callbackData =
+      product.title.trim() === "شیرینی"
+        ? "sweet"
+        : product.title.trim() === "گوشت"
+        ? "meat"
+        : product.title.trim() === "غذا"
+        ? "food"
+        : product.title.trim() === "میوه"
+        ? "fruit"
+        : "default";
+    return [
+      Markup.button.callback(
+        `${product.title}-${product.price} ت 💫`,
+        callbackData
+      ),
+    ];
+  });
+
+  ctx.reply("محصول مورد نظر را انتخاب کنید :", Markup.inlineKeyboard(buttons));
 };
 
-const choiceCountMenu = (ctx, name, price,count) => {
+const choiceCountMenu = (ctx, name, price, count) => {
   ctx.editMessageText(
     `خرید کد${name} به مبلغ : ${price} تومان\n تعداد را مشخص کنید \n تعداد: ${count} `,
     Markup.inlineKeyboard([
