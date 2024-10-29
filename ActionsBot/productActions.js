@@ -67,7 +67,7 @@ const findOneProduct = async (action) => {
         : "default";
 
     const query =
-      "SELECT price,title FROM products WHERE title LIKE ? GROUP BY title,price ";
+      "SELECT * FROM products WHERE title LIKE ? GROUP BY title,price ";
 
     const [product] = await db.execute(query, [`%${productTitle}%`]);
 

@@ -122,6 +122,18 @@ const isLoginAdmin = async (ctx) => {
   else return false;
 };
 
+const findByChatId = async (ctx) => {
+  try {
+    const chatId = ctx.chat.id;
+    const query = "SELECT * FROM users WHERE chat_id = ?";
+    const [user] = await db.execute(query, [chatId]);
+
+    return user[0];
+  } catch (error) {
+    throw error;
+  }
+};
+
 module.exports = {
   registerUser,
   adminGetPassword,
@@ -129,4 +141,5 @@ module.exports = {
   loginAdminGetPassword,
   loginAdmin,
   isLoginAdmin,
+  findByChatId
 };

@@ -15,11 +15,19 @@ const {
   removeProduct,
   findOneProduct,
 } = require("./ActionsBot/productActions");
+
+const {
+  createOrder,
+  findOneOrder,
+  updateStatusPayOrder,
+} = require("./ActionsBot/orderActions");
 const { hintMessage } = require("./messages");
 
 const token = configs.telegramToken;
 
 const bot = new Telegraf(token);
+
+//global variables
 
 //var for choice count of product
 let discountCount = 1;
@@ -27,6 +35,8 @@ let discountCount = 1;
 let name;
 //price of product for search in db , ...
 let price;
+//product that user want to buy
+let product;
 //flag for detect add product text from another text in text event
 let isWaitForAddProductInfo = false;
 //flag for detect remove product text from another text in text event
@@ -34,8 +44,20 @@ let isWaitForRemoveProductInfo = false;
 
 //start
 bot.start(async (ctx) => {
-  await registerUser(ctx);
-  mainMenu(ctx);
+  const payload = ctx.payload;
+
+  if (payload) {
+    if (product) {
+      const order = await findOneOrder(product.id, payload);
+
+      await updateStatusPayOrder(ctx, order);
+    }
+  } else {
+    await registerUser(ctx);
+    mainMenu(ctx);
+  }
+
+
 });
 
 //admin set password
@@ -130,12 +152,17 @@ bot.action("minus", (ctx) => {
   choiceCountMenu(ctx, name, price, discountCount);
 });
 
+// accept order and create order in db
+bot.action("accept", async (ctx) => {
+  await createOrder(ctx, product);
+});
+
 //send choice count of product keyboard menu
 bot.on("callback_query", async (ctx) => {
   const command = ctx.callbackQuery.data;
   const actions = ["meat", "fruit", "food", "sweet"];
 
-  const product = await findOneProduct(command);
+  product = await findOneProduct(command);
 
   switch (command) {
     case "meat":

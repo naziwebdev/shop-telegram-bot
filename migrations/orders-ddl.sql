@@ -3,7 +3,7 @@ CREATE TABLE orders (
     product_id int(10) unsigned NOT NULL,
     user_id int(10) unsigned NOT NULL,
     status_pay ENUM("pendding", "done", "cancel") NOT NULL DEFAULT "pendding",
-    ticket_id int unsigned,
+    track_id BIGINT unsigned,
     created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     UNIQUE KEY orders_ticket_id (ticket_id),
