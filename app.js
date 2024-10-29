@@ -1,6 +1,7 @@
-const { Telegraf, Markup } = require("telegraf");
+const { Telegraf } = require("telegraf");
 const configs = require("./configs");
 const redis = require("./redis");
+const axios = require("axios");
 const { mainMenu, buyMenu, choiceCountMenu } = require("./utils/Menues");
 const {
   registerUser,
@@ -46,18 +47,27 @@ let isWaitForRemoveProductInfo = false;
 bot.start(async (ctx) => {
   const payload = ctx.payload;
 
+  //if user have  order and payment for complete user order
   if (payload) {
     if (product) {
       const order = await findOneOrder(product.id, payload);
+      
+      const request = await axios.post("https://gateway.zibal.ir/v1/verify", {
+        merchant: "zibal",
+        trackId:order[0].track_id
+      });
 
-      await updateStatusPayOrder(ctx, order);
+      if (request.data.result == 100) {
+        await updateStatusPayOrder(ctx, order);
+      } else {
+        ctx.reply("تراکنش ناموفق ❌");
+      }
     }
+
   } else {
     await registerUser(ctx);
     mainMenu(ctx);
   }
-
-
 });
 
 //admin set password
@@ -98,9 +108,15 @@ bot.hears("راهنما ✅", (ctx) => {
   ctx.reply(hintMessage);
 });
 
+//not develope yet
 bot.hears("پشتیبانی 💁‍♀️", (ctx) => {
-  ctx.reply("پیام خود را برای پشتیبان ارسال نمایید :");
+  ctx.reply("coming soon ...");
 });
+
+//not develope yet
+bot.hears("حساب کاربری 👤", (ctx)=> {
+  ctx.reply("coming soon ...");
+})
 
 bot.on("text", async (ctx) => {
   const chatId = ctx.chat.id;
@@ -140,17 +156,6 @@ bot.action("menu", (ctx) => {
   buyMenu(ctx);
 });
 
-// plus count of product when buy
-bot.action("plus", (ctx) => {
-  discountCount = discountCount + 1;
-  choiceCountMenu(ctx, name, price, discountCount);
-});
-
-// minus count of product when buy
-bot.action("minus", (ctx) => {
-  discountCount = discountCount - 1;
-  choiceCountMenu(ctx, name, price, discountCount);
-});
 
 // accept order and create order in db
 bot.action("accept", async (ctx) => {

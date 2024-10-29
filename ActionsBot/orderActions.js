@@ -10,12 +10,13 @@ const createOrder = async (ctx, product) => {
     } else {
       const user = await findByChatId(ctx);
 
-      const existDiscount = await db.execute(
+      const [existDiscount] = await db.execute(
         "SELECT * FROM products WHERE used = 0 AND title = ?",
         [product.title]
       );
 
-      if (existDiscount) {
+
+      if (existDiscount.length !== 0) {
         //peymant req
         const request = await axios.post(
           "https://gateway.zibal.ir/v1/request",
@@ -25,6 +26,7 @@ const createOrder = async (ctx, product) => {
             callbackUrl: `https://t.me/discountPr_bot?start=${user.id}`,
           }
         );
+
 
         if (request.data.message === "success") {
           const trackId = request.data.trackId;
