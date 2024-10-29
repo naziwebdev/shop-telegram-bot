@@ -53,4 +53,28 @@ const removeProduct = async (ctx, title, price) => {
   }
 };
 
-module.exports = { addProduct, getProduct, removeProduct };
+const findOneProduct = async (action) => {
+  try {
+    const productTitle =
+      action === "sweet"
+        ? "شیرینی"
+        : action === "meat"
+        ? "گوشت"
+        : action === "food"
+        ? "غذا"
+        : action === "fruit"
+        ? "میوه"
+        : "default";
+
+    const query =
+      "SELECT price,title FROM products WHERE title LIKE ? GROUP BY title,price ";
+
+    const [product] = await db.execute(query, [`%${productTitle}%`]);
+
+    return product[0];
+  } catch (error) {
+    throw error;
+  }
+};
+
+module.exports = { addProduct, getProduct, removeProduct, findOneProduct };

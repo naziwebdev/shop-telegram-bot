@@ -10,7 +10,11 @@ const {
   loginAdmin,
 } = require("./ActionsBot/userActions");
 
-const { addProduct, removeProduct } = require("./ActionsBot/productActions");
+const {
+  addProduct,
+  removeProduct,
+  findOneProduct,
+} = require("./ActionsBot/productActions");
 const { hintMessage } = require("./messages");
 
 const token = configs.telegramToken;
@@ -19,7 +23,9 @@ const bot = new Telegraf(token);
 
 //var for choice count of product
 let discountCount = 1;
+//name of product for search in db , ...
 let name;
+//price of product for search in db , ...
 let price;
 //flag for detect add product text from another text in text event
 let isWaitForAddProductInfo = false;
@@ -104,7 +110,6 @@ bot.on("text", async (ctx) => {
     await removeProduct(ctx, productInfo[0], productInfo[1]);
     isWaitForRemoveProductInfo = false;
   }
-
 });
 
 //this must be above the callback_query otherwise dont work
@@ -126,33 +131,35 @@ bot.action("minus", (ctx) => {
 });
 
 //send choice count of product keyboard menu
-bot.on("callback_query", (ctx) => {
-  const cammand = ctx.callbackQuery.data;
+bot.on("callback_query", async (ctx) => {
+  const command = ctx.callbackQuery.data;
   const actions = ["meat", "fruit", "food", "sweet"];
 
-  switch (cammand) {
+  const product = await findOneProduct(command);
+
+  switch (command) {
     case "meat":
-      name = "پروتیین";
-      price = 4000;
+      name = product.title;
+      price = product.price;
       break;
     case "fruit":
-      name = "میوه";
-      price = 3000;
+      name = product.title;
+      price = product.price;
       break;
     case "food":
-      name = "غذا";
-      price = 6000;
+      name = product.title;
+      price = product.price;
       break;
     case "sweet":
-      name = "شیرینی";
-      price = 5000;
+      name = product.title;
+      price = product.price;
       break;
     default:
       name = "محصول";
       price = 0;
   }
 
-  if (actions.includes(cammand)) {
+  if (actions.includes(command)) {
     choiceCountMenu(ctx, name, price, discountCount);
   }
 });
