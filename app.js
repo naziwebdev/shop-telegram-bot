@@ -10,7 +10,7 @@ const {
   loginAdmin,
 } = require("./ActionsBot/userActions");
 
-const { addProduct } = require("./ActionsBot/productActions");
+const { addProduct, removeProduct } = require("./ActionsBot/productActions");
 const { hintMessage } = require("./messages");
 
 const token = configs.telegramToken;
@@ -23,6 +23,8 @@ let name;
 let price;
 //flag for detect add product text from another text in text event
 let isWaitForAddProductInfo = false;
+//flag for detect remove product text from another text in text event
+let isWaitForRemoveProductInfo = false;
 
 //start
 bot.start(async (ctx) => {
@@ -47,6 +49,15 @@ bot.command("add", async (ctx) => {
   );
 
   isWaitForAddProductInfo = true;
+});
+
+//remove product by admin
+bot.command("remove", async (ctx) => {
+  ctx.reply(
+    "نام و مبلغ محصول مورد نظر را به صورت \n میوه - 3000 \n  وارد کنید و مبلغ حتما با اعداد انگلیسی وارد شود"
+  );
+
+  isWaitForRemoveProductInfo = true;
 });
 
 //send products list keyborad menu
@@ -84,18 +95,16 @@ bot.on("text", async (ctx) => {
   //add product to db by admin
   if (isWaitForAddProductInfo) {
     const productInfo = userMessage.split("-");
-
     await addProduct(ctx, productInfo[0], productInfo[1]);
+    isWaitForAddProductInfo = false;
   }
 
-  if (
-    !userMessage.startsWith("/") &&
-    !isPasswordAdminMessage &&
-    !isLoginPasswordAdminMessage &&
-    !isWaitForAddProductInfo
-  ) {
-    ctx.reply("پیام شما با موفقیت دریافت شد 📩");
+  if (isWaitForRemoveProductInfo) {
+    const productInfo = userMessage.split("-");
+    await removeProduct(ctx, productInfo[0], productInfo[1]);
+    isWaitForRemoveProductInfo = false;
   }
+
 });
 
 //this must be above the callback_query otherwise dont work
