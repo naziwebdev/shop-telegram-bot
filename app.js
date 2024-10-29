@@ -9,6 +9,8 @@ const {
   loginAdminGetPassword,
   loginAdmin,
 } = require("./ActionsBot/userActions");
+
+const { addProduct } = require("./ActionsBot/productActions");
 const { hintMessage } = require("./messages");
 
 const token = configs.telegramToken;
@@ -19,6 +21,8 @@ const bot = new Telegraf(token);
 let discountCount = 1;
 let name;
 let price;
+//flag for detect add product text from another text in text event
+let isWaitForAddProductInfo = false;
 
 //start
 bot.start(async (ctx) => {
@@ -34,6 +38,15 @@ bot.command("setPassword", async (ctx) => {
 //get password for login admin
 bot.command("admin", async (ctx) => {
   await loginAdminGetPassword(ctx);
+});
+
+//add product by admin
+bot.command("add", async (ctx) => {
+  ctx.reply(
+    "نام و مبلغ محصول را وارد کنید و بین نام و مبلغ از خط تیره استفاده کنید\n مثال : میوه - 5000"
+  );
+
+  isWaitForAddProductInfo = true;
 });
 
 //send products list keyborad menu
@@ -68,10 +81,18 @@ bot.on("text", async (ctx) => {
     await loginAdmin(ctx, userMessage);
   }
 
+  //add product to db by admin
+  if (isWaitForAddProductInfo) {
+    const productInfo = userMessage.split("-");
+
+    await addProduct(ctx, productInfo[0], productInfo[1]);
+  }
+
   if (
     !userMessage.startsWith("/") &&
     !isPasswordAdminMessage &&
-    !isLoginPasswordAdminMessage
+    !isLoginPasswordAdminMessage &&
+    !isWaitForAddProductInfo
   ) {
     ctx.reply("پیام شما با موفقیت دریافت شد 📩");
   }

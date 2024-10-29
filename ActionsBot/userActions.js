@@ -114,10 +114,19 @@ const loginAdmin = async (ctx, password) => {
   }
 };
 
+const isLoginAdmin = async (ctx) => {
+  const chatId = ctx.chat.id;
+  const isLogin = await redis.get(`admin:${chatId}:login:success`);
+
+  if (isLogin) return true;
+  else return false;
+};
+
 module.exports = {
   registerUser,
   adminGetPassword,
   adminSetPassword,
   loginAdminGetPassword,
   loginAdmin,
+  isLoginAdmin,
 };
