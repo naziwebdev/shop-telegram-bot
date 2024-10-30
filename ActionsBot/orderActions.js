@@ -15,7 +15,6 @@ const createOrder = async (ctx, product) => {
         [product.title]
       );
 
-
       if (existDiscount.length !== 0) {
         //peymant req
         const request = await axios.post(
@@ -26,7 +25,6 @@ const createOrder = async (ctx, product) => {
             callbackUrl: `https://t.me/discountPr_bot?start=${user.id}`,
           }
         );
-
 
         if (request.data.message === "success") {
           const trackId = request.data.trackId;
@@ -68,10 +66,11 @@ const findOneOrder = async (productID, userID) => {
   }
 };
 
-const getRandomDiscountKey = async () => {
+const getRandomDiscountKey = async (product) => {
   try {
     const [discount] = await db.execute(
-      "SELECT * FROM products WHERE used = 0 ORDER BY RAND() LIMIT 1"
+      "SELECT * FROM products WHERE used = 0 AND title LIKE ? ORDER BY RAND() LIMIT 1",
+      [`%${product.title}%`]
     );
 
     await db.execute("UPDATE products SET used = 1 WHERE id = ?", [
@@ -84,11 +83,11 @@ const getRandomDiscountKey = async () => {
   }
 };
 
-const updateStatusPayOrder = async (ctx, order) => {
+const updateStatusPayOrder = async (ctx, order, product) => {
   try {
     const query = "UPDATE orders SET status_pay = ? WHERE id=?";
     await db.execute(query, ["done", order[0].id]);
-    const discount = await getRandomDiscountKey();
+    const discount = await getRandomDiscountKey(product);
 
     ctx.reply(`کد تخفیف شما 😍 : \n ${discount}`);
   } catch (error) {

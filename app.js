@@ -2,7 +2,7 @@ const { Telegraf } = require("telegraf");
 const configs = require("./configs");
 const redis = require("./redis");
 const axios = require("axios");
-const { mainMenu, buyMenu, choiceCountMenu } = require("./utils/Menues");
+const { mainMenu, buyMenu, confirmMenu } = require("./utils/Menues");
 const {
   registerUser,
   adminGetPassword,
@@ -58,7 +58,7 @@ bot.start(async (ctx) => {
       });
 
       if (request.data.result == 100) {
-        await updateStatusPayOrder(ctx, order);
+        await updateStatusPayOrder(ctx, order,product);
       } else {
         ctx.reply("تراکنش ناموفق ❌");
       }
@@ -192,7 +192,7 @@ bot.on("callback_query", async (ctx) => {
   }
 
   if (actions.includes(command)) {
-    choiceCountMenu(ctx, name, price, discountCount);
+    confirmMenu(ctx, name, price, discountCount);
   }
 });
 

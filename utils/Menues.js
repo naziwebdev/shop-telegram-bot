@@ -37,7 +37,7 @@ const buyMenu = async (ctx) => {
   ctx.reply("محصول مورد نظر را انتخاب کنید :", Markup.inlineKeyboard(buttons));
 };
 
-const choiceCountMenu = (ctx, name, price, count) => {
+const confirmMenu = (ctx, name, price, count) => {
   ctx.editMessageText(
     `خرید کد ${name} به مبلغ : ${price} تومان \n تعداد: ${count} `,
     Markup.inlineKeyboard([
@@ -49,4 +49,4 @@ const choiceCountMenu = (ctx, name, price, count) => {
   );
 };
 
-module.exports = { mainMenu, buyMenu, choiceCountMenu };
+module.exports = { mainMenu, buyMenu, confirmMenu };
