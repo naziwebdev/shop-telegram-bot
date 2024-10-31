@@ -1,8 +1,9 @@
-const { Telegraf } = require("telegraf");
+const { Telegraf , Markup } = require("telegraf");
 const configs = require("./configs");
 const redis = require("./redis");
 const axios = require("axios");
 const { mainMenu, buyMenu, confirmMenu } = require("./utils/Menues");
+const { checkUserMemberShip } = require("./utils/checkRequireChannels");
 const {
   registerUser,
   adminGetPassword,
@@ -43,6 +44,20 @@ let isWaitForAddProductInfo = false;
 //flag for detect remove product text from another text in text event
 let isWaitForRemoveProductInfo = false;
 
+//check join in required channels
+bot.use(async (ctx, next) => {
+  const isMember = await checkUserMemberShip(ctx);
+  if (isMember) return next();
+  else {
+    ctx.reply(
+      "ابتدا در کانال های زیر عضو شوید",
+      Markup.inlineKeyboard([
+        Markup.button.url("چنل اسپانسر", "t.me/requiredbot77"),
+      ])
+    );
+  }
+});
+
 //start
 bot.start(async (ctx) => {
   const payload = ctx.payload;
@@ -51,19 +66,18 @@ bot.start(async (ctx) => {
   if (payload) {
     if (product) {
       const order = await findOneOrder(product.id, payload);
-      
+
       const request = await axios.post("https://gateway.zibal.ir/v1/verify", {
         merchant: "zibal",
-        trackId:order[0].track_id
+        trackId: order[0].track_id,
       });
 
       if (request.data.result == 100) {
-        await updateStatusPayOrder(ctx, order,product);
+        await updateStatusPayOrder(ctx, order, product);
       } else {
         ctx.reply("تراکنش ناموفق ❌");
       }
     }
-
   } else {
     await registerUser(ctx);
     mainMenu(ctx);
@@ -114,9 +128,9 @@ bot.hears("پشتیبانی 💁‍♀️", (ctx) => {
 });
 
 //not develope yet
-bot.hears("حساب کاربری 👤", (ctx)=> {
+bot.hears("حساب کاربری 👤", (ctx) => {
   ctx.reply("coming soon ...");
-})
+});
 
 bot.on("text", async (ctx) => {
   const chatId = ctx.chat.id;
@@ -155,7 +169,6 @@ bot.on("text", async (ctx) => {
 bot.action("menu", (ctx) => {
   buyMenu(ctx);
 });
-
 
 // accept order and create order in db
 bot.action("accept", async (ctx) => {
